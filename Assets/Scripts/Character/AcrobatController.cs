@@ -24,11 +24,42 @@ public class AcrobatController : MonoBehaviour {
 
 	}
 
-	float startTime;
+	float      startTime;
+	Vector3    startPosition;
+	Vector3    startScale;
+	Quaternion startRotation;
+
+	void OnGameReset() {
+
+		state = AcrobatState.Idle;
+
+		startTime            = Time.time;
+		transform.position   = startPosition;
+		transform.localScale = startScale;
+		transform.rotation   = startRotation;
+
+		verticalVelocity = 0f;
+		scaleVelocity    = 0f;
+		totalRotation    = 0f;
+
+	}
+
+	void OnGameOver() {
+
+		state = AcrobatState.GameOver;
+
+	}
 
 	void Start() {
 
-		startTime = Time.time;
+		GameController.instance.GameReset += OnGameReset;
+		GameController.instance.GameOver  += OnGameOver;
+
+		startPosition = transform.position;
+		startScale    = transform.localScale;
+		startRotation = transform.rotation;
+
+		OnGameReset();
 
 	}	
 
@@ -42,6 +73,7 @@ public class AcrobatController : MonoBehaviour {
 		Crouching,
 		LeftTurn,
 		RightTurn,
+		GameOver,
 	}
 
 	AcrobatState state = AcrobatState.Idle;
@@ -127,15 +159,17 @@ public class AcrobatController : MonoBehaviour {
 
 	}
 
-	float verticalVelocity = 0f;
-	public float gravity = 9f;
+	// Set up in Reset()
+	float verticalVelocity;
+	float scaleVelocity;
+	float totalRotation;
 
-	float scaleVelocity = 0f;
+	public float gravity = 9f;
+	
 	public float scaleGravity = 1f;
 	public float minScale = 0.5f;
 
 	public float rotationSpeed = 10f;
-	float totalRotation = 0;
 	const float ROTATION_LIMIT = 90f;
 
 	void LateUpdate() {

@@ -15,12 +15,19 @@ public class CameraController : MonoBehaviour {
 		if(!target) {
 			Debug.LogWarning("Please configure target for the camera");
 			enabled = false;
-		}		
+		}
+
+		GameController.instance.GameReset += OnGameReset;
 	
 	}
 
-	// Needs to be public for sitations like game reset, player teleportation, etc
-	public void ApplyPosition() {
+	void OnGameReset() {
+
+		ApplyPosition();
+
+	}
+
+	void ApplyPosition() {
 
 		Vector3 groundedTarget = target.position;
 		groundedTarget.y = 0;
@@ -44,7 +51,9 @@ public class CameraController : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () {
 
-		ApplyPosition();
+		if (!GameController.instance.gameOver)
+			ApplyPosition();
 	
 	}
+
 }
