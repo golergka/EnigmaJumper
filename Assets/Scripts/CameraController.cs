@@ -32,7 +32,7 @@ public class CameraController : MonoBehaviour {
 		targetCameraPosition.y = height;
 
 		Vector3 targetLookPosition = target.position;
-		targetLookPosition.y += targetOffset;
+		targetLookPosition.y = targetOffset;
 
 		Quaternion targetCameraRotation = Quaternion.LookRotation(targetLookPosition - targetCameraPosition);
 
