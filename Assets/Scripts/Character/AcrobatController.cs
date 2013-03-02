@@ -10,20 +10,6 @@ public class AcrobatController : MonoBehaviour {
 
 #region Setup
 
-	CharacterController characterController;
-
-	void Awake () {
-
-		characterController = GetComponent<CharacterController>();
-		if (!characterController) {
-
-			Debug.LogWarning("Please attach CharacterController component!");
-			enabled = false;
-
-		}
-
-	}
-
 	float      startTime;
 	Vector3    startPosition;
 	Vector3    startScale;
@@ -37,10 +23,6 @@ public class AcrobatController : MonoBehaviour {
 		transform.position   = startPosition;
 		transform.localScale = startScale;
 		transform.rotation   = startRotation;
-
-		verticalVelocity = 0f;
-		scaleVelocity    = 0f;
-		totalRotation    = 0f;
 
 	}
 
@@ -68,44 +50,87 @@ public class AcrobatController : MonoBehaviour {
 #region Movement states
 
 	enum AcrobatState {
+
 		Idle,
+
 		Jumping,
-		Crouching,
+
 		LeftTurn,
 		RightTurn,
 		UTurn,
 		GameOver,
+
 	}
 
 	AcrobatState state = AcrobatState.Idle;
 
-	public float jumpVelocity = 5f;
+	const string ITWEEN_JUMP         = "Jump";
+	const string ITWEEN_ROTATE_LEFT  = "RotateLeft";
+	const string ITWEEN_ROTATE_RIGHT = "RotateRight";
 
 	void Jump() {
 
+		if (state != AcrobatState.Idle)
+			return;
+
+		Debug.Log("Jump!");
+
 		state = AcrobatState.Jumping;
-		verticalVelocity += jumpVelocity;
+		iTweenEvent.GetEvent(gameObject, ITWEEN_JUMP).Play();
 
 	}
 
-	public float crouchVelocity = 5f;
+	void HitGround() {
 
-	void Crouch() {
+		if (state == AcrobatState.Jumping) {
 
-		state = AcrobatState.Crouching;
-		scaleVelocity -= crouchVelocity;
+			state = AcrobatState.Idle;
+
+		}
 
 	}
 
 	void LeftTurn() {
 
+		if (state != AcrobatState.Idle)
+			return;
+
 		state = AcrobatState.LeftTurn;
+
+		iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_LEFT).Play();
 
 	}
 
 	void RightTurn() {
 
+		if (state != AcrobatState.Idle)
+			return;
+
 		state = AcrobatState.RightTurn;
+
+		iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_RIGHT).Play();
+
+	}
+
+#endregion
+
+#region iTween callbacks
+
+	void OnJumpComplete() {
+
+		state = AcrobatState.Idle;
+
+	}
+
+	void OnRotateLeftComplete() {
+
+		state = AcrobatState.Idle;
+
+	}
+
+	void OnRotateRightComplete() {
+
+		state = AcrobatState.Idle;
 
 	}
 
@@ -116,22 +141,17 @@ public class AcrobatController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (state != AcrobatState.Idle)
-			return;
-
 		if (Input.GetButton(JUMP_BUTTON_NAME))
 		{
 			Jump();
-		} 
-		else if (Input.GetButton(CROUCH_BUTTON_NAME))
-		{
-			Crouch();
 		}
-		else if (Input.GetButton(LEFT_BUTTON_NAME))
+		
+		if (Input.GetButton(LEFT_BUTTON_NAME))
 		{
 			LeftTurn();
 		}
-		else if (Input.GetButton(RIGHT_BUTTON_NAME))
+		
+		if (Input.GetButton(RIGHT_BUTTON_NAME))
 		{
 			RightTurn();
 		}
@@ -160,109 +180,28 @@ public class AcrobatController : MonoBehaviour {
 
 	}
 
-	// Set up in Reset()
-	float verticalVelocity;
-	float scaleVelocity;
-	float totalRotation;
-
-	public float gravity = 9f;
-	
-	public float scaleGravity = 1f;
-	public float minScale = 0.5f;
-
-	public float rotationSpeed = 10f;
-	const float ROTATION_LIMIT = 90f;
-
-	/*
-
-	void LateUpdate() {
-
-		// Rotating
-
-		if (state == AcrobatState.LeftTurn ||
-			state == AcrobatState.RightTurn) {
-
-			bool sign = (state == AcrobatState.RightTurn);
-			float rotation = rotationSpeed * Time.deltaTime;
-
-			transform.Rotate(0, ( sign ? 1f : -1f ) * rotation, 0);
-			totalRotation += rotation;
-
-			if (totalRotation >= ROTATION_LIMIT) {
-
-				transform.Rotate(0, ( sign ? 1f : -1f ) * (ROTATION_LIMIT - totalRotation), 0);
-				totalRotation = 0;
-				state = AcrobatState.Idle;
-
-			}	
-
-		}
-
-		// Scale
-
-		Vector3 scale = transform.localScale;
-
-		if (scale.y >= 1f && scaleVelocity >= -0.0001 ) {
-
-			if (state == AcrobatState.Crouching) {
-
-				state = AcrobatState.Idle;
-
-			}
-
-			scaleVelocity = 0f;			
-			scale.y = 1f;
-
-		} else {
-
-			scaleVelocity += scaleGravity * Time.deltaTime;
-
-		}
-
-		scale.y += scaleVelocity * Time.deltaTime;
-		scale.y = Mathf.Max(scale.y, minScale);
-
-		transform.localScale = scale;
-
-		// Vertical movement & gravity
-
-		Vector3 velocity = HorizontalVelocity();
-
-		// Floating point stuff. Not really a magic number
-		if (characterController.isGrounded && verticalVelocity <= 0.00001 ) {
-
-			if (state == AcrobatState.Jumping) {
-
-				state = AcrobatState.Idle;
-
-			}
-
-			verticalVelocity = 0f;
-
-		} else {
-
-			verticalVelocity -= gravity * Time.deltaTime;
-
-		}
-
-		velocity.y = verticalVelocity;
-
-		characterController.Move(velocity * Time.deltaTime);
-
-	}
-
-	*/
-
 #endregion
 
 #region Detecting collisions
 
-	const int OBSTACLE_LAYER = 8;
+	const int LAYER_OBSTACLE = 8;
+	const int LAYER_FLOOR    = 11;
 
 	void Meet(GameObject other) {
 
-		if (other.layer == OBSTACLE_LAYER)
+		if (other.layer == LAYER_OBSTACLE)
 			GameController.instance.Hit();
+
+		if (other.layer == LAYER_FLOOR)
+			HitGround();
+
+	}
+
+	// Whatever method of collision I'll use in the future, this will support them all
+
+	void OnCollisionEnter(Collision collisionInfo) {
+
+		Meet(collisionInfo.gameObject);
 
 	}
 

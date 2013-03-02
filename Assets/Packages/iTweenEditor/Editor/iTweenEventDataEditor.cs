@@ -156,7 +156,7 @@ public class iTweenEventDataEditor : Editor {
 		GUILayout.EndHorizontal();
 		
 		GUILayout.BeginHorizontal();
-		GUILayout.Label("Initial Start Delay (delay begins once the iTweenEvent is played)");
+		GUILayout.Label("Initial Start Delay");
 		evt.delay = EditorGUILayout.FloatField(evt.delay);
 		GUILayout.EndHorizontal();
 		
