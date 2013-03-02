@@ -53,42 +53,19 @@ public class AcrobatController : MonoBehaviour {
 
 		Idle,
 
-		Jumping,
-
 		LeftTurn,
 		RightTurn,
-		UTurn,
+
 		GameOver,
 
 	}
 
 	AcrobatState state = AcrobatState.Idle;
 
-	const string ITWEEN_JUMP         = "Jump";
 	const string ITWEEN_ROTATE_LEFT  = "RotateLeft";
 	const string ITWEEN_ROTATE_RIGHT = "RotateRight";
-
-	void Jump() {
-
-		if (state != AcrobatState.Idle)
-			return;
-
-		Debug.Log("Jump!");
-
-		state = AcrobatState.Jumping;
-		iTweenEvent.GetEvent(gameObject, ITWEEN_JUMP).Play();
-
-	}
-
-	void HitGround() {
-
-		if (state == AcrobatState.Jumping) {
-
-			state = AcrobatState.Idle;
-
-		}
-
-	}
+	const string ITWEEN_UTURN        = "UTurn";
+	const string ITWEEN_FORWARD      = "MoveForward";
 
 	void LeftTurn() {
 
@@ -97,7 +74,7 @@ public class AcrobatController : MonoBehaviour {
 
 		state = AcrobatState.LeftTurn;
 
-		iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_LEFT).Play();
+		
 
 	}
 
@@ -108,7 +85,20 @@ public class AcrobatController : MonoBehaviour {
 
 		state = AcrobatState.RightTurn;
 
-		iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_RIGHT).Play();
+		
+
+	}
+
+	void UTurn() {
+
+		iTweenEvent.GetEvent(gameObject, ITWEEN_FORWARD).Stop();
+		iTweenEvent.GetEvent(gameObject, ITWEEN_UTURN).Play();
+
+	}
+
+	void MoveForward() {
+
+		iTweenEvent.GetEvent(gameObject, ITWEEN_FORWARD).Play();
 
 	}
 
@@ -116,21 +106,46 @@ public class AcrobatController : MonoBehaviour {
 
 #region iTween callbacks
 
-	void OnJumpComplete() {
-
-		state = AcrobatState.Idle;
-
-	}
-
 	void OnRotateLeftComplete() {
 
 		state = AcrobatState.Idle;
+		MoveForward();
 
 	}
 
 	void OnRotateRightComplete() {
 
 		state = AcrobatState.Idle;
+		MoveForward();
+
+	}
+
+	void OnUTurnComplete() {
+
+		MoveForward();
+
+	}
+
+	void OnMoveForwardComplete() {
+
+		switch(state) {
+
+			case AcrobatState.Idle:
+				MoveForward();
+				break;
+
+			case AcrobatState.LeftTurn:
+				iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_LEFT).Play();
+				break;
+
+			case AcrobatState.RightTurn:
+				iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_RIGHT).Play();
+				break;
+
+			default:
+				break;
+
+		}
 
 	}
 
@@ -140,11 +155,6 @@ public class AcrobatController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-		if (Input.GetButton(JUMP_BUTTON_NAME))
-		{
-			Jump();
-		}
 		
 		if (Input.GetButton(LEFT_BUTTON_NAME))
 		{
@@ -190,10 +200,7 @@ public class AcrobatController : MonoBehaviour {
 	void Meet(GameObject other) {
 
 		if (other.layer == LAYER_OBSTACLE)
-			GameController.instance.Hit();
-
-		if (other.layer == LAYER_FLOOR)
-			HitGround();
+			UTurn();
 
 	}
 
