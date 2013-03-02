@@ -64,9 +64,6 @@ public class AcrobatController : MonoBehaviour {
 
 #region Scheduling turns
 
-	const string ITWEEN_UTURN        = "UTurn";
-	const string ITWEEN_FORWARD      = "MoveForward";
-
 	public float gridPointStickTime = 0.2f;
 
 	bool scheduledTurn = false;
@@ -102,6 +99,10 @@ public class AcrobatController : MonoBehaviour {
 #endregion
 
 #region Implemeting turns
+
+	const string ITWEEN_UTURN        = "UTurn";
+	const string ITWEEN_FORWARD      = "MoveForward";
+	const string ITWEEN_JUMP         = "Jump";
 
 	const float MINIMUM_FLOAT = 0.01f;
 
@@ -191,6 +192,20 @@ public class AcrobatController : MonoBehaviour {
 	void MoveForward() {
 
 		iTweenEvent.GetEvent(gameObject, ITWEEN_FORWARD).Play();
+
+	}
+
+#endregion
+
+#region Jumping & crouching
+
+	void Jump() {
+
+		iTweenEvent.GetEvent(gameObject, ITWEEN_JUMP).Play();
+
+	}
+
+	void Crouch() {
 
 	}
 
@@ -355,6 +370,14 @@ public class AcrobatController : MonoBehaviour {
 		
 		if ( Input.GetButton(RIGHT_BUTTON_NAME) && CanTurnRight() ) {
 			ScheduleRightTurn();
+		}
+
+		if ( Input.GetButton(JUMP_BUTTON_NAME) ) {
+			Jump();
+		}
+
+		if ( Input.GetButton(CROUCH_BUTTON_NAME) ) {
+			Crouch();
 		}
 
 		if (CanImplementTurn())
