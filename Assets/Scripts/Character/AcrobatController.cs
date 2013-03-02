@@ -73,6 +73,7 @@ public class AcrobatController : MonoBehaviour {
 		Crouching,
 		LeftTurn,
 		RightTurn,
+		UTurn,
 		GameOver,
 	}
 
@@ -172,6 +173,8 @@ public class AcrobatController : MonoBehaviour {
 	public float rotationSpeed = 10f;
 	const float ROTATION_LIMIT = 90f;
 
+	/*
+
 	void LateUpdate() {
 
 		// Rotating
@@ -247,6 +250,8 @@ public class AcrobatController : MonoBehaviour {
 		characterController.Move(velocity * Time.deltaTime);
 
 	}
+
+	*/
 
 #endregion
 
