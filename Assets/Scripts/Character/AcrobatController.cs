@@ -289,6 +289,7 @@ public class AcrobatController : MonoBehaviour {
 	const int LAYER_OBSTACLE = 8;
 	const int LAYER_FLOOR    = 11;
 	const int LAYER_TURN     = 12;
+	const int LAYER_HAZARD   = 13;
 
 	void Meet(GameObject other) {
 
@@ -297,6 +298,9 @@ public class AcrobatController : MonoBehaviour {
 
 		if (other.layer == LAYER_TURN)
 			currentTurnGridElement = other.GetComponent<TurnGridElement>();
+
+		if (other.layer == LAYER_HAZARD)
+			GameController.instance.Hit();
 
 	}
 
