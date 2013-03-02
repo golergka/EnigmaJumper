@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class VisitGridGenerator : MonoBehaviour {
+public class GridGenerator : MonoBehaviour {
 
 	public Transform visitGridCell;
 
@@ -30,7 +30,8 @@ public class VisitGridGenerator : MonoBehaviour {
 				cellPosition.x += cellSize * (x - gridSize/2);
 				cellPosition.z += cellSize * (y - gridSize/2);
 
-				Instantiate(visitGridCell, cellPosition, Quaternion.identity);
+				Transform cell = Instantiate(visitGridCell, cellPosition, Quaternion.identity) as Transform;
+				cell.parent = this.transform;
 
 			}
 		}

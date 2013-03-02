@@ -10,7 +10,6 @@ public class AcrobatController : MonoBehaviour {
 
 #region Setup
 
-	float      startTime;
 	Vector3    startPosition;
 	Vector3    startScale;
 	Quaternion startRotation;
@@ -19,7 +18,6 @@ public class AcrobatController : MonoBehaviour {
 
 		state = AcrobatState.Idle;
 
-		startTime            = Time.time;
 		transform.position   = startPosition;
 		transform.localScale = startScale;
 		transform.rotation   = startRotation;
@@ -62,30 +60,124 @@ public class AcrobatController : MonoBehaviour {
 
 	AcrobatState state = AcrobatState.Idle;
 
-	const string ITWEEN_ROTATE_LEFT  = "RotateLeft";
-	const string ITWEEN_ROTATE_RIGHT = "RotateRight";
+#endregion
+
+#region Scheduling turns
+
 	const string ITWEEN_UTURN        = "UTurn";
 	const string ITWEEN_FORWARD      = "MoveForward";
 
-	void LeftTurn() {
+	public float gridPointStickTime = 0.2f;
+
+	bool scheduledTurn = false;
+
+	void ScheduleLeftTurn() {
+
+		if (scheduledTurn)
+			return;
 
 		if (state != AcrobatState.Idle)
 			return;
 
 		state = AcrobatState.LeftTurn;
 
-		
+		scheduledTurn = true;
 
 	}
 
-	void RightTurn() {
+	void ScheduleRightTurn() {
+
+		if (scheduledTurn)
+			return;
 
 		if (state != AcrobatState.Idle)
 			return;
 
 		state = AcrobatState.RightTurn;
 
+		scheduledTurn = true;
+
+	}
+
+#endregion
+
+#region Implemeting turns
+
+	const float MINIMUM_FLOAT = 0.01f;
+
+	Vector3 TargetPosition() {
+
+		Vector3 targetPosition = rigidbody.position;
+		targetPosition.x = gridPoint.x;
+		targetPosition.z = gridPoint.z;
+
+		return targetPosition;
+
+	}
+
+	Vector3 TargetLookPosition(bool right) {
+
+		Vector3 delta;
+		Vector3 forward = transform.forward;
+
+		if (forward.x > MINIMUM_FLOAT) {
+
+			delta = new Vector3(0,0, (right ? -1f : 1f));
+
+		} else if (forward.x < -MINIMUM_FLOAT) {
+
+			delta = new Vector3(0,0, right ? 1f : -1f);
+
+		} else if (forward.z > MINIMUM_FLOAT) {
+
+			delta = new Vector3(right ? 1f : -1f, 0, 0);
+
+		} else if (forward.z < -MINIMUM_FLOAT) {
+
+			delta = new Vector3(right ? -1f : 1f, 0, 0);
+
+		} else {
+
+			Debug.LogError("Cannot determine character direction!");
+			delta = new Vector3();
+
+		}
+
+		return TargetPosition() + delta;
+
+	}
+
+	void ImplementTurn() {
+
+		bool right;
+
+		switch (state) {
+
+			case (AcrobatState.LeftTurn):
+				right = false;
+				break;
+
+			case (AcrobatState.RightTurn):
+				right = true;
+				break;
+
+			default:
+				return;
+
+		}
+
+		iTweenEvent.GetEvent(gameObject, ITWEEN_FORWARD).Stop();
+
+		Hashtable args = new Hashtable();
+
+		args.Add( "position"   , TargetPosition()          );
+		args.Add( "time"       , gridPointStickTime        );
+		args.Add( "oncomplete" , "OnStickComplete"         );
+		args.Add( "looktarget" , TargetLookPosition(right) );
 		
+		iTween.MoveTo(gameObject, args);
+
+		state = AcrobatState.Idle;
 
 	}
 
@@ -106,87 +198,87 @@ public class AcrobatController : MonoBehaviour {
 
 #region iTween callbacks
 
-	void OnRotateLeftComplete() {
+	void OnStickComplete() {
 
-		state = AcrobatState.Idle;
-		MoveForward();
-
-	}
-
-	void OnRotateRightComplete() {
-
-		state = AcrobatState.Idle;
 		MoveForward();
 
 	}
 
 	void OnUTurnComplete() {
 
+		scheduledTurn = false;
 		MoveForward();
 
 	}
 
 	void OnMoveForwardComplete() {
 
-		switch(state) {
-
-			case AcrobatState.Idle:
-				MoveForward();
-				break;
-
-			case AcrobatState.LeftTurn:
-				iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_LEFT).Play();
-				break;
-
-			case AcrobatState.RightTurn:
-				iTweenEvent.GetEvent(gameObject, ITWEEN_ROTATE_RIGHT).Play();
-				break;
-
-			default:
-				break;
-
-		}
+		MoveForward();
 
 	}
 
 #endregion
 
-#region Input
-	
-	// Update is called once per frame
-	void Update () {
-		
-		if (Input.GetButton(LEFT_BUTTON_NAME))
-		{
-			LeftTurn();
+#region Turn directing
+
+	TurnGridElement currentTurnGridElement;
+
+	public float turnDistance = 3f;
+
+	Vector3 gridPoint {
+
+		get {
+
+			return currentTurnGridElement.transform.position;
+
 		}
-		
-		if (Input.GetButton(RIGHT_BUTTON_NAME))
-		{
-			RightTurn();
-		}
-	
-	}
-
-#endregion
-
-#region Movement
-
-	public float baseVelocity = 1f;
-	public float acceleration = 0.1f;
-
-	float Speed() {
-
-		return baseVelocity + acceleration * (Time.time - startTime);
 
 	}
 
-	Vector3 HorizontalVelocity() {
+	bool CanImplementTurn() {
 
-		Vector3 result = transform.forward;
-		result *= Speed();
-		result.y = 0;
-		return result;
+		return (transform.position - gridPoint).magnitude < turnDistance;
+
+	}
+
+	bool CanTurn(bool right) {
+
+		Vector3 forward = transform.forward;
+
+		if (forward.x > MINIMUM_FLOAT) {
+
+			return right ? currentTurnGridElement.zNegative : currentTurnGridElement.zPositive;
+
+		} else if (forward.x < -MINIMUM_FLOAT) {
+
+			return right ? currentTurnGridElement.zPositive : currentTurnGridElement.zNegative;
+
+		} else if (forward.z > MINIMUM_FLOAT) {
+
+			return right ? currentTurnGridElement.xPositive : currentTurnGridElement.xNegative;
+
+		} else if (forward.z < -MINIMUM_FLOAT) {
+
+			return right ? currentTurnGridElement.xNegative : currentTurnGridElement.xPositive;
+
+		} else {
+			
+			Debug.LogError("Cannot determine character direction!");
+			return false;
+
+		}
+
+	}
+
+	public bool CanTurnRight() {
+
+		return CanTurn(true);
+
+	}
+
+	public bool CanTurnLeft() {
+
+		return CanTurn(false);
 
 	}
 
@@ -196,11 +288,29 @@ public class AcrobatController : MonoBehaviour {
 
 	const int LAYER_OBSTACLE = 8;
 	const int LAYER_FLOOR    = 11;
+	const int LAYER_TURN     = 12;
 
 	void Meet(GameObject other) {
 
 		if (other.layer == LAYER_OBSTACLE)
 			UTurn();
+
+		if (other.layer == LAYER_TURN)
+			currentTurnGridElement = other.GetComponent<TurnGridElement>();
+
+	}
+
+	void Leave(GameObject other) {
+
+		if (other.layer == LAYER_TURN) {
+
+			scheduledTurn = false;
+			
+			TurnGridElement exTurnDirector = other.GetComponent<TurnGridElement>();
+			if (currentTurnGridElement == exTurnDirector)
+				currentTurnGridElement = null;
+
+		}
 
 	}
 
@@ -212,18 +322,40 @@ public class AcrobatController : MonoBehaviour {
 
 	}
 
-	void OnControllerColliderHit(ControllerColliderHit hit) {
-
-		Meet(hit.gameObject);
-
-	}
-
 	void OnTriggerEnter(Collider other) {
 
 		Meet(other.gameObject);
 
 	}
 
+	void OnCollisionExit(Collision collisionInfo) {
+
+		Leave(collisionInfo.gameObject);
+
+	}
+
+	void OnTriggerExit(Collider other) {
+
+		Leave(other.gameObject);
+
+	}
+
 #endregion
+		
+	// Update is called once per frame
+	void Update () {
+		
+		if ( Input.GetButton(LEFT_BUTTON_NAME) && CanTurnLeft() ) {
+			ScheduleLeftTurn();
+		}
+		
+		if ( Input.GetButton(RIGHT_BUTTON_NAME) && CanTurnRight() ) {
+			ScheduleRightTurn();
+		}
+
+		if (CanImplementTurn())
+			ImplementTurn();
+	
+	}
 
 }
