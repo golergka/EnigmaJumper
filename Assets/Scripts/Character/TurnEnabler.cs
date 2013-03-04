@@ -9,10 +9,16 @@ public class TurnEnabler : MonoBehaviour {
 
 		TurnGridElement newGridElement = other.GetComponent<TurnGridElement>();
 
-		if (newGridElement)
+		if (newGridElement) {
+
 			currentGridElement = newGridElement;
+			turnedInThisGridElement = false;
+
+		}
 
 	}
+
+	bool turnedInThisGridElement = false;
 
 	public bool CanTurnRight() {
 
@@ -26,9 +32,18 @@ public class TurnEnabler : MonoBehaviour {
 
 	}
 
+	public void Turned() {
+
+		turnedInThisGridElement = true;
+
+	}
+
 	const float MINIMUM_FLOAT = 0.01f;
 
 	bool CanTurn(bool right) {
+
+		if (turnedInThisGridElement)
+			return false;
 
 		Vector3 forward = transform.forward;
 

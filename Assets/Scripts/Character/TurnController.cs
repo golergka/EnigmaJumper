@@ -32,6 +32,7 @@ public class TurnController : MonoBehaviour {
 		rotationTarget.z =   transform.forward.x;
 
 		turnState = TurnState.Left;
+		turnEnabler.Turned();
 
 	}
 
@@ -48,6 +49,7 @@ public class TurnController : MonoBehaviour {
 
 
 		turnState = TurnState.Right;
+		turnEnabler.Turned();
 
 	}
 
