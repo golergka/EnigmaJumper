@@ -8,8 +8,8 @@ public class KeyboardInput : MonoBehaviour {
 	const string BUTTON_RIGHT  = "Right";
 	const string BUTTON_LEFT   = "Left";
 
-	JumpController     jumpController;
-	MovementController movementController;
+	JumpController jumpController;
+	TurnController turnController;
 
 	void Awake() {
 
@@ -22,9 +22,9 @@ public class KeyboardInput : MonoBehaviour {
 
 		}
 
-		movementController = GetComponent<MovementController>();
+		turnController = GetComponent<TurnController>();
 
-		if (!movementController) {
+		if (!turnController) {
 
 			Debug.LogWarning("Please attach movement controller to the character!");
 			enabled = false;
@@ -45,13 +45,13 @@ public class KeyboardInput : MonoBehaviour {
 		}
 
 		if ( Input.GetButton(BUTTON_LEFT) ) {
-			movementController.TurnLeft();
+			turnController.TurnLeft();
 		}
 
 		if ( Input.GetButton(BUTTON_RIGHT) ) {
-			movementController.TurnRight();
+			turnController.TurnRight();
 		}
 	
 	}
-	
+
 }

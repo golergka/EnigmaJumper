@@ -3,16 +3,28 @@ using System.Collections;
 
 public class MovementController : MonoBehaviour {
 
-	public void TurnLeft() {
+	[HideInInspector]
+	public Vector3 motion;
+
+	CharacterController characterController;
+
+	void Awake() {
+
+		characterController = GetComponent<CharacterController>();
+
+		if (!characterController) {
+			Debug.LogWarning("Please attach character controller to the character!");
+			enabled = false;
+		}
 
 	}
+	
+	// Update is called once per frame
+	void Update () {
 
-	public void TurnRight() {
+		characterController.Move(motion);
 
+		motion = new Vector3();
+	
 	}
-
-	public void BounceBack() {
-		
-	}
-
 }
