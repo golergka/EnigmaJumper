@@ -3,11 +3,29 @@ using System.Collections;
 
 public class TurnController : MonoBehaviour {
 
+#region Setup
+
+	TurnEnabler turnEnabler;
+
+	void Awake() {
+
+		turnEnabler = GetComponent<TurnEnabler>();
+
+		if (!turnEnabler)
+			turnEnabler = gameObject.AddComponent<TurnEnabler>();
+
+	}
+
+#endregion
+
 #region Public interface
 
 	public void TurnLeft() {
 
 		if (turnState != TurnState.Idle)
+			return;
+
+		if (!turnEnabler.CanTurnLeft())
 			return;
 
 		rotationTarget.x = - transform.forward.z;
@@ -20,6 +38,9 @@ public class TurnController : MonoBehaviour {
 	public void TurnRight() {
 
 		if (turnState != TurnState.Idle)
+			return;
+
+		if (!turnEnabler.CanTurnRight())
 			return;
 
 		rotationTarget.x =   transform.forward.z;
