@@ -75,13 +75,13 @@ public class JumpController : MonoBehaviour {
 
 #region Private state
 
-	public enum JumpState {
+	enum JumpState {
 		Idle,
 		Jumping,
 		Crouching,
 	}
 
-	public JumpState jumpState = JumpState.Idle;
+	JumpState jumpState = JumpState.Idle;
 
 	float maneuverStart = 0f;
 
