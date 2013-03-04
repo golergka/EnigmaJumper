@@ -36,6 +36,9 @@ public class KeyboardInput : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		if (GameController.instance.gameState != GameController.GameState.Running)
+			return;
+
 		if ( Input.GetButton(BUTTON_JUMP) ) {
 			jumpController.Jump();
 		}

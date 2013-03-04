@@ -50,8 +50,6 @@ public class LineStabilizer : MonoBehaviour {
 
 		}
 
-		Debug.DrawLine(transform.position, target, Color.green, 0f, false);
-
 		movementController.motion += motion;
 	
 	}
