@@ -46,7 +46,6 @@ public class ObstacleReactor : MonoBehaviour {
 
 	const int LAYER_OBSTACLE = 8;
 
-	// Use this for initialization
 	void OnControllerColliderHit(ControllerColliderHit hit) {
 
 		if ( hit.gameObject.layer == LAYER_OBSTACLE && !acting) {

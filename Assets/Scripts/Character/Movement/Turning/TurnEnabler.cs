@@ -45,6 +45,9 @@ public class TurnEnabler : MonoBehaviour {
 		if (turnedInThisGridElement)
 			return false;
 
+		if (!currentGridElement)
+			return false;
+
 		Vector3 forward = transform.forward;
 
 		if (forward.x > MINIMUM_FLOAT) {

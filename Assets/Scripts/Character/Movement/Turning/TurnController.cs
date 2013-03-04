@@ -16,6 +16,22 @@ public class TurnController : MonoBehaviour {
 
 	}
 
+	void Start() {
+
+		GameController.instance.GameReset += OnGameReset;
+
+	}
+
+#endregion
+
+#region Game states
+
+	void OnGameReset() {
+
+		turnState = TurnState.Idle;
+
+	}
+
 #endregion
 
 #region Public interface

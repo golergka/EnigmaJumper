@@ -31,6 +31,27 @@ public class JumpController : MonoBehaviour {
 
 	}
 
+	void Start() {
+
+		GameController.instance.GameReset += OnGameReset;
+
+	}
+
+#endregion
+
+#region Game state
+
+	void OnGameOver() {
+
+	}
+
+	void OnGameReset() {
+
+		Reset();
+		jumpState = JumpState.Idle;
+
+	}
+
 #endregion
 
 #region Designer configuration
