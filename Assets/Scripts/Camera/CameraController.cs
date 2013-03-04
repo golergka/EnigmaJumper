@@ -51,7 +51,7 @@ public class CameraController : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () {
 
-		if (!GameController.instance.gameOver)
+		if (GameController.instance.gameState == GameController.GameState.Running)
 			ApplyPosition();
 	
 	}

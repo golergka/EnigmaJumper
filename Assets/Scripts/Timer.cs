@@ -39,7 +39,7 @@ public class Timer : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!GameController.instance.gameOver)
+		if (GameController.instance.gameState == GameController.GameState.Running)
 			time = Time.time - startTime;
 	
 	}
