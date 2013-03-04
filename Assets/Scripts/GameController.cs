@@ -17,8 +17,6 @@ public class GameController : MonoBehaviour {
 			enabled = false;
 		}
 
-		gameOver = false;
-
 	}
 
 #endregion
@@ -28,7 +26,19 @@ public class GameController : MonoBehaviour {
 	public event Action GameOver;
 	public event Action GameReset;
 
-	public bool gameOver { get; private set; }
+	public enum GameState {
+		Running,
+		GameOver,
+		Won,
+	}
+
+	public GameState gameState { get; private set; }
+
+	public void Start() {
+
+		gameState = GameState.Running;
+
+	}
 
 	public void Hit() {
 
@@ -37,7 +47,13 @@ public class GameController : MonoBehaviour {
 		if (GameOver != null) // TODO: make thread-safe
 			GameOver();
 
-		gameOver = true;
+		gameState = GameState.GameOver;
+
+	}
+
+	public void Win() {
+
+		gameState = GameState.Won;
 
 	}
 
@@ -46,7 +62,7 @@ public class GameController : MonoBehaviour {
 		if (GameReset != null) // TODO: make thread-safe
 			GameReset();
 
-		gameOver = false;
+		gameState = GameState.Running;
 
 	}
 
@@ -56,12 +72,25 @@ public class GameController : MonoBehaviour {
 
 	public void OnGUI() {
 
-		if (gameOver) {
+		if (gameState == GameState.Running)
+			return;
 
-			if ( GUI.Button( new Rect(Screen.width/2 - 100, Screen.height/2 - 20, 100, 20), "Reset" ) )
-				Reset();
+		string labelText = "";
+
+		if (gameState == GameState.GameOver) {
+
+			labelText = "You lost.";
+
+		} else if (gameState == GameState.Won) {
+
+			labelText = "You won!";
 
 		}
+
+		GUI.Label( new Rect(Screen.width/2 - 100, Screen.height/2 - 50, 100, 20), labelText );
+
+		if ( GUI.Button( new Rect(Screen.width/2 - 100, Screen.height/2 - 20, 100, 20), "Reset" ) )
+				Reset();
 
 	}
 
